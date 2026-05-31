@@ -3,7 +3,6 @@ class Player:
     def __init__(self):
         self.lives = 3
         self.maxshots = 5
-        self.babysaves = 0
         self.xpos = 400
         self.ypos = 500
         self.speed = 2
@@ -12,20 +11,30 @@ class Player:
         self.lastshot = 0
         self.lastreload = pygame.time.get_ticks()
         self.shots = self.maxshots
-        self.shotsprite = pygame.image.load("/Users/windera27/Library/CloudStorage/OneDrive-BarkerCollege/2026/Software Engineering/Ashen Skies Game/images/temporaryfireball").convert_alpha()
+        self.shotsprite = pygame.image.load("images/temporaryfireball").convert_alpha()
         self.shotsprite = pygame.transform.scale(self.shotsprite, (20, 20))
-        self.charsprite = pygame.Rect(self.xpos, self.ypos, 152, 100)
+        self.charwidth = 184*2
+        self.charheight = 110*2
+        self.charsprite = pygame.image.load("images/dragon.png").convert_alpha()
+        self.charsprite = pygame.transform.scale(self.charsprite, (self.charwidth, self.charheight))
+        self.rect = self.charsprite.get_rect()
+        self.rect.x = self.xpos
+        self.rect.y = self.ypos
+        self.shoteffect = pygame.mixer.Sound("sounds/fireball.wav")
+        self.firerate = 250
+        
+        
         
     def draw(self, screen):
-        pygame.draw.rect(screen, "red", self.charsprite)
+        screen.blit(self.charsprite, self.rect)
         
     def move(self):
         key = pygame.key.get_pressed()
         
-        if key[pygame.K_a] and self.xpos >= 0:
+        if key[pygame.K_a] and self.xpos >= (0 - (self.charwidth/4)):
             self.xpos -= (3*self.speed)
             
-        if key[pygame.K_d] and self.xpos <= 648:
+        if key[pygame.K_d] and self.xpos <= (800 - (self.charwidth - (self.charwidth/4))):
             self.xpos += (3*self.speed)
             
         if key[pygame.K_s] and self.ypos <= 500:
@@ -34,11 +43,11 @@ class Player:
         if key[pygame.K_w] and self.ypos >= 100:
             self.ypos -= (3*self.speed)
             
-        self.charsprite.x = self.xpos
-        self.charsprite.y = self.ypos
+        self.rect.x = self.xpos
+        self.rect.y = self.ypos
             
     
-    def attack(self, screen):
+    def attack(self, screen, enemy):
         key = pygame.key.get_pressed()
         now = pygame.time.get_ticks()
         
@@ -46,8 +55,9 @@ class Player:
             self.shots = self.maxshots
             self.lastreload = now
             
-        if key[pygame.K_SPACE] and self.shots > 0 and now - self.lastshot > 250:
-            self.shotsfired.append(pygame.Rect(self.xpos + 75, self.ypos + 45, 20, 20))
+        if key[pygame.K_SPACE] and self.shots > 0 and now - self.lastshot > self.firerate:
+            self.shoteffect.play()
+            self.shotsfired.append(pygame.Rect((self.xpos + (self.charwidth/2) - 10), self.ypos, 20, 20))
             self.shots -= 1
             self.lastshot = now
             
@@ -56,4 +66,8 @@ class Player:
             screen.blit(self.shotsprite, (i.x, i.y))
             
             if i.y < 0:
+                self.shotsfired.remove(i)
+                
+            if i.colliderect(enemy.rect):
+                #print("hit enemy")
                 self.shotsfired.remove(i)

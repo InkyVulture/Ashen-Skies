@@ -9,13 +9,20 @@ class Enemy:
         self.bulsprite = pygame.Rect(self.xpos, self.ypos, 20, 20)
         self.lastshot = pygame.time.get_ticks()
         
+        self.charsprite = pygame.image.load("images/shipplaceholder.png").convert_alpha()
+        self.charsprite = pygame.transform.scale(self.charsprite, (70, 70))
+        self.rect = self.charsprite.get_rect()
+        self.rect.x = self.xpos
+        self.rect.y = self.ypos
+        
+        
     def draw(self, screen):
-        pygame.draw.rect(screen, "blue", self.body)
+        screen.blit(self.charsprite, self.rect)
         
     def update(self, screen):
         now = pygame.time.get_ticks()
         
-        if now - self.lastshot > (1000/ self.firerate):
+        if now - self.lastshot > (2000/ self.firerate):
             self.bullets.append(pygame.Rect(self.xpos, self.ypos, 20, 20))
             self.lastshot = now
             
